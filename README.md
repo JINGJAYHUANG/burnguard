@@ -1,5 +1,9 @@
 # BurnGuard (`burnguard`) — v1.0.0
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-emerald.svg)](./LICENSE)
+[![Python 3.11+](https://img.shields.io/badge/Python-3.11%20%7C%203.12%20%7C%203.13-blue.svg)](./pyproject.toml)
+[![Live Demo](https://img.shields.io/badge/Live_Demo-Interactive_HTML_Report-6366f1.svg)](https://jingjayhuang.github.io/unit-500-lifeline/burnguard-demo.html)
+
 **AI Agent Token Cost Optimizer, Deterministic CI Budget Circuit-Breaker & MCP Security Auditor**
 **AI 智能体 Token 成本优化器、CI 预算熔断器与 MCP 安全审计工具（零依赖 · 纯本地离线 · MIT 开源）**
 
@@ -40,7 +44,11 @@ BurnGuard calculates both standalone waste and **de-duplicated Waterfall recover
 ## Quickstart / 快速上手 (Python 3.11+, Zero Dependencies)
 
 ```bash
+# Install directly from GitHub / 直接从 GitHub 安装（零第三方运行时依赖）
 python3 -m venv .venv
+.venv/bin/pip install git+https://github.com/JINGJAYHUANG/burnguard.git
+
+# Or install from a local clone / 或从本地克隆安装
 .venv/bin/pip install .
 
 # 1. Analyze agent session transcripts / 分析智能体会话日志

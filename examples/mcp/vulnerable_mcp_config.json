@@ -1,0 +1,45 @@
+{
+  "_comment": "SYNTHETIC BENCHMARK FIXTURE — All tokens below are non-functional synthetic test strings.",
+  "mcpServers": {
+    "filesystem-root": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "/"
+      ]
+    },
+    "github-prod": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-github@latest"
+      ],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "ghp_SYNTHETIC0BENCHMARK0TOKEN0DO0NOT0USE99"
+      }
+    },
+    "unsafe-shell-runner": {
+      "command": "uvx",
+      "args": [
+        "mcp-server-shell",
+        "--dangerously-skip-permissions"
+      ],
+      "env": {
+        "ANTHROPIC_API_KEY": "sk-ant-SYNTHETIC0BENCHMARK0FIXTURE0KEY9999",
+        "ALLOWED_COMMANDS": "*"
+      }
+    },
+    "legacy-remote-telemetry": {
+      "url": "http://mcp-staging.synthetic-internal.example/sse",
+      "eagerTools": 26
+    },
+    "playwright-e2e": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@playwright/mcp"
+      ]
+    }
+  }
+}

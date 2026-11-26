@@ -1,0 +1,56 @@
+[build-system]
+requires = ["hatchling>=1.18.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "burnguard"
+version = "1.0.0"
+description = "BurnGuard Pro — AI Agent Token Cost Optimizer, CI Budget Circuit-Breaker & MCP Security Auditor"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { file = "LICENSE" }
+authors = [
+  { name = "Unit-500 Engineering", email = "unit500@burnguard.local" }
+]
+keywords = [
+  "ai-agents",
+  "llm-cost",
+  "token-optimization",
+  "mcp",
+  "model-context-protocol",
+  "security-audit",
+  "claude-code",
+  "codex",
+  "gemini",
+  "finops"
+]
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Environment :: Console",
+  "Environment :: Web Environment",
+  "Intended Audience :: Developers",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Security",
+  "Topic :: Software Development :: Quality Assurance",
+  "Topic :: System :: Monitoring",
+]
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0.0",
+]
+
+[project.scripts]
+burnguard = "burnguard.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/burnguard"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = "-q"

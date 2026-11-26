@@ -1,0 +1,1115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>BurnGuard Pro Diagnostic — benchmarks</title>
+  <style>
+    :root {
+      --bg: #090C10;
+      --panel: #11161F;
+      --panel-alt: #161D29;
+      --border: #232E3F;
+      --text: #E6EDF3;
+      --muted: #8B9BB0;
+      --amber: #F59E0B;
+      --green: #10B981;
+      --red: #EF4444;
+      --cyan: #38BDF8;
+      --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+      --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      line-height: 1.5;
+      padding: 0 0 64px 0;
+    }
+    .topbar {
+      background: #0D1118;
+      border-bottom: 1px solid var(--border);
+      padding: 18px 28px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand-mark {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: #1A2230;
+      border: 1px solid var(--amber);
+      display: grid;
+      place-items: center;
+      color: var(--amber);
+      font-family: var(--mono);
+      font-weight: 800;
+      font-size: 15px;
+    }
+    .brand h1 {
+      margin: 0;
+      font-size: 18px;
+      letter-spacing: -0.01em;
+    }
+    .brand p {
+      margin: 2px 0 0 0;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .top-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 12px;
+      font-family: var(--mono);
+      color: var(--muted);
+    }
+    .status-pill {
+      padding: 5px 11px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 11px;
+      letter-spacing: 0.04em;
+    }
+    .badge-amber { background: rgba(245, 158, 11, 0.15); color: var(--amber); border: 1px solid rgba(245, 158, 11, 0.4); }
+    .badge-red { background: rgba(239, 68, 68, 0.16); color: #FCA5A5; border: 1px solid rgba(239, 68, 68, 0.5); }
+    .badge-green { background: rgba(16, 185, 129, 0.16); color: #6EE7B7; border: 1px solid rgba(16, 185, 129, 0.45); }
+    .container {
+      max-width: 1360px;
+      margin: 24px auto;
+      padding: 0 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+    }
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 14px;
+    }
+    .kpi-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px 18px;
+    }
+    .kpi-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    .kpi-value {
+      font-family: var(--mono);
+      font-size: 26px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .kpi-sub {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .text-amber { color: var(--amber); }
+    .text-green { color: var(--green); }
+    .text-cyan { color: var(--cyan); }
+    .text-red { color: var(--red); }
+    .mono { font-family: var(--mono); }
+    .mono-dim { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 22px;
+    }
+    .panel-head {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+    .panel-head h2 {
+      margin: 0;
+      font-size: 16px;
+    }
+    .subtext {
+      margin: 4px 0 0 0;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(460px, 1fr));
+      gap: 18px;
+    }
+    .chart-box {
+      background: var(--panel-alt);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+    }
+    .chart-box h3 {
+      margin: 0 0 4px 0;
+      font-size: 14px;
+    }
+    .telemetry-svg {
+      width: 100%;
+      height: auto;
+      display: block;
+      margin-top: 8px;
+    }
+    .legend-row {
+      display: flex;
+      gap: 14px;
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+    .dot {
+      display: inline-block;
+      width: 9px;
+      height: 9px;
+      border-radius: 2px;
+      margin-right: 5px;
+    }
+    .sim-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 20px;
+      align-items: center;
+    }
+    @media (max-width: 860px) {
+      .sim-grid, .charts-grid, .mcp-grid { grid-template-columns: 1fr !important; }
+    }
+    .slider-group {
+      margin-bottom: 14px;
+    }
+    .slider-group label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      margin-bottom: 6px;
+    }
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--green);
+    }
+    .sim-output {
+      background: var(--panel-alt);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      border-radius: 10px;
+      padding: 18px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .filter-btn, .btn-action {
+      background: var(--panel-alt);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
+      font-family: var(--mono);
+    }
+    .filter-btn.active, .btn-action:hover {
+      border-color: var(--amber);
+      color: var(--amber);
+    }
+    .finding-card {
+      background: var(--panel-alt);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: 15px 18px;
+      margin-bottom: 12px;
+    }
+    .finding-header {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .finding-badges {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .sev-pill {
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+    .sev-critical { background: rgba(239, 68, 68, 0.2); color: #FCA5A5; border: 1px solid rgba(239, 68, 68, 0.45); }
+    .sev-high { background: rgba(245, 158, 11, 0.2); color: #FCD34D; border: 1px solid rgba(245, 158, 11, 0.45); }
+    .sev-medium { background: rgba(56, 189, 248, 0.16); color: #7DD3FC; border: 1px solid rgba(56, 189, 248, 0.4); }
+    .sev-low { background: rgba(148, 163, 184, 0.16); color: #CBD5E1; border: 1px solid #475569; }
+    .cat-pill {
+      font-family: var(--mono);
+      font-size: 11px;
+      padding: 2px 7px;
+      border-radius: 4px;
+      background: #0D121A;
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+    .save-amount {
+      font-family: var(--mono);
+      font-weight: 700;
+      color: var(--green);
+      font-size: 15px;
+      margin-right: 6px;
+    }
+    .finding-title {
+      margin: 4px 0 8px 0;
+      font-size: 14px;
+    }
+    .finding-evidence, .finding-fix {
+      margin: 4px 0;
+      font-size: 13px;
+      color: #C9D4E0;
+    }
+    .finding-fix strong { color: var(--green); }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    th, td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+    }
+    th {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+    }
+    td.num, th.num { text-align: right; }
+    .mcp-grid {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 18px;
+    }
+    .code-card {
+      background: #0A0E14;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .code-card-head {
+      padding: 10px 14px;
+      background: #121824;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+    }
+    pre {
+      margin: 0;
+      padding: 14px;
+      overflow: auto;
+      max-height: 460px;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: #A7F3D0;
+    }
+    .grade-chip {
+      font-family: var(--mono);
+      font-weight: 700;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+    }
+    .grade-a, .grade-b { background: rgba(16,185,129,0.16); color: #6EE7B7; border: 1px solid rgba(16,185,129,0.4); }
+    .grade-c { background: rgba(245,158,11,0.16); color: #FCD34D; border: 1px solid rgba(245,158,11,0.4); }
+    .grade-d, .grade-f { background: rgba(239,68,68,0.18); color: #FCA5A5; border: 1px solid rgba(239,68,68,0.45); }
+    .budget-bar-wrap {
+      background: var(--panel-alt);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 16px;
+    }
+    .budget-bar-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      margin-bottom: 8px;
+    }
+    .budget-track {
+      height: 8px;
+      background: #0B0F17;
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .budget-fill {
+      height: 100%;
+      background: var(--amber);
+    }
+    .empty-box, .empty-chart {
+      padding: 20px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    footer {
+      max-width: 1360px;
+      margin: 12px auto 0;
+      padding: 0 24px;
+      display: flex;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: 12px;
+      font-family: var(--mono);
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">BG</div>
+      <div>
+        <h1>BurnGuard Pro Diagnostic — benchmarks</h1>
+        <p>BurnGuard Pro v1.0.0 · 100% Offline Decimal FinOps &amp; MCP Supply-Chain Auditor</p>
+      </div>
+    </div>
+    <div class="top-meta">
+      <span>Generated 2026-11-24 00:12:47 UTC</span>
+      <span class="status-pill badge-red">CRITICAL MCP RISK (4)</span>
+    </div>
+  </header>
+
+  <main class="container">
+    
+        <div class="budget-bar-wrap">
+          <div class="budget-bar-meta">
+            <span>Budget Circuit-Breaker Cap: <strong>$10.00</strong></span>
+            <span class="mono">Used: $5.98 (59.8%)</span>
+          </div>
+          <div class="budget-track">
+            <div class="budget-fill" style="width: 59.8%;"></div>
+          </div>
+        </div>
+        
+
+    <section class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">Verified Transcript Spend</div>
+        <div class="kpi-value text-amber">$5.98</div>
+        <div class="kpi-sub">$5.984266 exact · 602,710 tok</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Recoverable USD Savings</div>
+        <div class="kpi-value text-green">$4.72</div>
+        <div class="kpi-sub">78.8% net Waterfall reduction</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Optimized Target Spend</div>
+        <div class="kpi-value text-cyan">$1.27</div>
+        <div class="kpi-sub">3 session(s) · 17 turns</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Prompt Cache Hit Rate</div>
+        <div class="kpi-value">17.4%</div>
+        <div class="kpi-sub">Target &ge; 75.0% on multi-turn runs</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Waste Anti-Patterns</div>
+        <div class="kpi-value">7</div>
+        <div class="kpi-sub">Loops · Cache · Schemas · Dumps</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">MCP Security Posture</div>
+        <div class="kpi-value">F</div>
+        <div class="kpi-sub">Risk 100/100 · $6.53/100 turns</div>
+      </div>
+    </section>
+
+    
+    <section class="panel">
+      <div class="panel-head">
+        <div>
+          <h2>Visual Cost Telemetry &amp; Context Burn Profile</h2>
+          <p class="subtext">Exact Decimal Waterfall Attribution &amp; Turn-by-Turn Token Stack (Primary Session: <span class="mono">01_claude_code_runaway_session</span>)</p>
+        </div>
+      </div>
+      <div class="charts-grid">
+        <div class="chart-box">
+          <h3>4-Vector Savings Waterfall (USD)</h3>
+          <svg viewBox="0 0 680 250" class="telemetry-svg" role="img" aria-label="Token Spend Optimization Waterfall">
+<line x1="56" y1="206.0" x2="660" y2="206.0" stroke="#1E293B" stroke-dasharray="3 3" />
+<text x="48" y="210.0" text-anchor="end" fill="#64748B" font-size="10" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">$0.00</text>
+<line x1="56" y1="161.5" x2="660" y2="161.5" stroke="#1E293B" stroke-dasharray="3 3" />
+<text x="48" y="165.5" text-anchor="end" fill="#64748B" font-size="10" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">$1.50</text>
+<line x1="56" y1="117.0" x2="660" y2="117.0" stroke="#1E293B" stroke-dasharray="3 3" />
+<text x="48" y="121.0" text-anchor="end" fill="#64748B" font-size="10" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">$2.99</text>
+<line x1="56" y1="72.5" x2="660" y2="72.5" stroke="#1E293B" stroke-dasharray="3 3" />
+<text x="48" y="76.5" text-anchor="end" fill="#64748B" font-size="10" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">$4.49</text>
+<line x1="56" y1="28.0" x2="660" y2="28.0" stroke="#1E293B" stroke-dasharray="3 3" />
+<text x="48" y="32.0" text-anchor="end" fill="#64748B" font-size="10" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">$5.98</text>
+<rect x="75.1" y="28.0" width="62.4" height="178.0" rx="4" fill="#F59E0B" fill-opacity="0.88" />
+<text x="106.3" y="22.0" text-anchor="middle" fill="#E2E8F0" font-size="11" font-weight="600" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">$5.98</text>
+<text x="106.3" y="234" text-anchor="middle" fill="#94A3B8" font-size="11">Current Spend</text>
+<rect x="175.8" y="28.0" width="62.4" height="92.8" rx="4" fill="#10B981" fill-opacity="0.88" />
+<text x="207.0" y="22.0" text-anchor="middle" fill="#E2E8F0" font-size="11" font-weight="600" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">-$3.12</text>
+<text x="207.0" y="234" text-anchor="middle" fill="#94A3B8" font-size="11">Retry Loops</text>
+<rect x="276.5" y="120.8" width="62.4" height="15.1" rx="4" fill="#10B981" fill-opacity="0.88" />
+<text x="307.7" y="114.8" text-anchor="middle" fill="#E2E8F0" font-size="11" font-weight="600" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">-$0.51</text>
+<text x="307.7" y="234" text-anchor="middle" fill="#94A3B8" font-size="11">Context Dumps</text>
+<rect x="377.1" y="135.9" width="62.4" height="10.0" rx="4" fill="#10B981" fill-opacity="0.88" />
+<text x="408.3" y="129.9" text-anchor="middle" fill="#E2E8F0" font-size="11" font-weight="600" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">-$0.34</text>
+<text x="408.3" y="234" text-anchor="middle" fill="#94A3B8" font-size="11">MCP Bloat</text>
+<rect x="477.8" y="145.9" width="62.4" height="22.4" rx="4" fill="#10B981" fill-opacity="0.88" />
+<text x="509.0" y="139.9" text-anchor="middle" fill="#E2E8F0" font-size="11" font-weight="600" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">-$0.75</text>
+<text x="509.0" y="234" text-anchor="middle" fill="#94A3B8" font-size="11">Cache Busting</text>
+<rect x="578.5" y="168.3" width="62.4" height="37.7" rx="4" fill="#38BDF8" fill-opacity="0.88" />
+<text x="609.7" y="162.3" text-anchor="middle" fill="#E2E8F0" font-size="11" font-weight="600" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">$1.27</text>
+<text x="609.7" y="234" text-anchor="middle" fill="#94A3B8" font-size="11">Optimized Net</text>
+</svg>
+        </div>
+        <div class="chart-box">
+          <h3>Turn-by-Turn Context Growth &amp; Retry Failures</h3>
+          <svg viewBox="0 0 680 250" class="telemetry-svg" role="img" aria-label="Turn-by-Turn Token Burn Timeline">
+<line x1="56" y1="206.0" x2="660" y2="206.0" stroke="#1E293B" stroke-dasharray="3 3" />
+<text x="48" y="210.0" text-anchor="end" fill="#64748B" font-size="10" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">0k</text>
+<line x1="56" y1="117.0" x2="660" y2="117.0" stroke="#1E293B" stroke-dasharray="3 3" />
+<text x="48" y="121.0" text-anchor="end" fill="#64748B" font-size="10" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">26k</text>
+<line x1="56" y1="28.0" x2="660" y2="28.0" stroke="#1E293B" stroke-dasharray="3 3" />
+<text x="48" y="32.0" text-anchor="end" fill="#64748B" font-size="10" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">52k</text>
+<rect x="77.8" y="149.7" width="32.0" height="56.3" fill="#F59E0B" fill-opacity="0.88" />
+<rect x="77.8" y="147.9" width="32.0" height="1.8" fill="#10B981" />
+<text x="93.8" y="234" text-anchor="middle" fill="#94A3B8" font-size="10" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">T0</text>
+<rect x="153.2" y="102.6" width="32.0" height="103.4" fill="#F59E0B" fill-opacity="0.88" />
+<rect x="153.2" y="100.6" width="32.0" height="2.1" fill="#10B981" />
+<text x="169.2" y="234" text-anchor="middle" fill="#94A3B8" font-size="10" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">T1</text>
+<rect x="228.8" y="96.5" width="32.0" height="109.5" fill="#F59E0B" fill-opacity="0.88" />
+<rect x="228.8" y="94.4" width="32.0" height="2.1" fill="#10B981" />
+<text x="244.8" y="234" text-anchor="middle" fill="#94A3B8" font-size="10" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">T2</text>
+<rect x="304.2" y="60.7" width="32.0" height="145.3" fill="#EF4444" fill-opacity="0.88" />
+<rect x="304.2" y="58.0" width="32.0" height="2.7" fill="#10B981" />
+<circle cx="320.2" cy="51.0" r="3.5" fill="#EF4444" />
+<text x="320.2" y="234" text-anchor="middle" fill="#94A3B8" font-size="10" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">T3</text>
+<rect x="379.8" y="53.2" width="32.0" height="152.8" fill="#EF4444" fill-opacity="0.88" />
+<rect x="379.8" y="50.5" width="32.0" height="2.7" fill="#10B981" />
+<circle cx="395.8" cy="43.5" r="3.5" fill="#EF4444" />
+<text x="395.8" y="234" text-anchor="middle" fill="#94A3B8" font-size="10" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">T4</text>
+<rect x="455.2" y="45.7" width="32.0" height="160.3" fill="#EF4444" fill-opacity="0.88" />
+<rect x="455.2" y="43.0" width="32.0" height="2.7" fill="#10B981" />
+<circle cx="471.2" cy="36.0" r="3.5" fill="#EF4444" />
+<text x="471.2" y="234" text-anchor="middle" fill="#94A3B8" font-size="10" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">T5</text>
+<rect x="530.8" y="38.2" width="32.0" height="167.8" fill="#EF4444" fill-opacity="0.88" />
+<rect x="530.8" y="35.5" width="32.0" height="2.7" fill="#10B981" />
+<circle cx="546.8" cy="28.5" r="3.5" fill="#EF4444" />
+<text x="546.8" y="234" text-anchor="middle" fill="#94A3B8" font-size="10" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">T6</text>
+<rect x="606.2" y="30.7" width="32.0" height="175.3" fill="#EF4444" fill-opacity="0.88" />
+<rect x="606.2" y="28.0" width="32.0" height="2.7" fill="#10B981" />
+<circle cx="622.2" cy="21.0" r="3.5" fill="#EF4444" />
+<text x="622.2" y="234" text-anchor="middle" fill="#94A3B8" font-size="10" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">T7</text>
+</svg>
+          <div class="legend-row">
+            <span><i class="dot" style="background:#0EA5E9;"></i>Cached Input</span>
+            <span><i class="dot" style="background:#F59E0B;"></i>Uncached Input</span>
+            <span><i class="dot" style="background:#EF4444;"></i>Error / Retry Turn</span>
+            <span><i class="dot" style="background:#10B981;"></i>Output</span>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+
+    <section class="panel">
+      <div class="panel-head">
+        <div>
+          <h2>Interactive Engineering Team FinOps ROI Forecast</h2>
+          <p class="subtext">Project monthly &amp; annual cash preserved if the audited waste rate ($1.5727/session) is eliminated across your workflow.</p>
+        </div>
+      </div>
+      <div class="sim-grid">
+        <div>
+          <div class="slider-group">
+            <label><span>Agent Sessions per Developer / Day</span><strong class="mono" id="sessPerDayLabel">12</strong></label>
+            <input type="range" id="sessPerDaySlider" min="1" max="100" value="12" />
+          </div>
+          <div class="slider-group">
+            <label><span>Active Engineering Seats</span><strong class="mono" id="seatsLabel">5</strong></label>
+            <input type="range" id="seatsSlider" min="1" max="50" value="5" />
+          </div>
+        </div>
+        <div class="sim-output">
+          <div>
+            <div class="kpi-label">Projected Monthly Savings</div>
+            <div class="kpi-value text-green" id="monthlySavedVal">$0.00</div>
+            <div class="kpi-sub">22 active engineering days/mo</div>
+          </div>
+          <div>
+            <div class="kpi-label">Projected Annual Savings</div>
+            <div class="kpi-value text-cyan" id="annualSavedVal">$0.00</div>
+            <div class="kpi-sub" id="paybackLabel">Payback vs $59 Pro: &lt; 1 day</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <div>
+          <h2>Actionable Token Waste Diagnostics</h2>
+          <p class="subtext">De-duplicated Waterfall savings guarantee zero token double-counting across overlapping findings.</p>
+        </div>
+      </div>
+      <div class="filter-bar" id="findingFilters">
+        <button type="button" class="filter-btn active" data-filter="ALL">All (7)</button>
+        <button type="button" class="filter-btn" data-filter="CRITICAL">Critical</button>
+        <button type="button" class="filter-btn" data-filter="RUNAWAY_RETRY_LOOP">Retry Loops</button>
+        <button type="button" class="filter-btn" data-filter="PROMPT_CACHE_BUSTING">Cache Busting</button>
+        <button type="button" class="filter-btn" data-filter="BLOATED_TOOL_SCHEMAS">MCP Schema Bloat</button>
+        <button type="button" class="filter-btn" data-filter="OVERSIZED_CONTEXT_DUMP">Oversized Dumps</button>
+      </div>
+      <div id="findingsList">
+        
+                <div class="finding-card" data-category="RUNAWAY_RETRY_LOOP" data-severity="CRITICAL">
+                  <div class="finding-header">
+                    <div class="finding-badges">
+                      <span class="sev-pill sev-critical">CRITICAL</span>
+                      <span class="cat-pill">RUNAWAY_RETRY_LOOP</span>
+                      <span class="mono-dim">BG-LOOP-001 · Session 01_claude_code_runaway_session · T3..T7 (5 turns)</span>
+                    </div>
+                    <div class="finding-savings">
+                      <span class="save-amount">+$3.12</span>
+                      <span class="mono-dim">($3.120000 exact)</span>
+                    </div>
+                  </div>
+                  <h4 class="finding-title">Runaway Retry Loop: Bash (command=pytest tests/test_ledger_sync.py)</h4>
+                  <p class="finding-evidence"><strong>Evidence:</strong> Executed across 5 turns (turns 3..7) with 4 redundant retry turns re-billing full context. Sample error: &#x27;Command exited with code 1 Traceback (most recent call last): File &#x27;tests/test_ledger_sync.py&#x27;, line 44, in test_idempotent_post C&#x27;</p>
+                  <p class="finding-fix"><strong>Remediation:</strong> Add a max-2-retry circuit breaker per normalized `(tool_name, args_hash)` in your agent harness and force root-cause file inspection before re-running failing commands.</p>
+                </div>
+                
+                <div class="finding-card" data-category="PROMPT_CACHE_BUSTING" data-severity="CRITICAL">
+                  <div class="finding-header">
+                    <div class="finding-badges">
+                      <span class="sev-pill sev-critical">CRITICAL</span>
+                      <span class="cat-pill">PROMPT_CACHE_BUSTING</span>
+                      <span class="mono-dim">BG-CACHE-004 · Session 01_claude_code_runaway_session · T1..T3 (3 turns)</span>
+                    </div>
+                    <div class="finding-savings">
+                      <span class="save-amount">+$0.46</span>
+                      <span class="mono-dim">($0.461392 exact)</span>
+                    </div>
+                  </div>
+                  <h4 class="finding-title">Prompt-Cache Busting: Dynamic ISO-8601 timestamp in System Prefix</h4>
+                  <p class="finding-evidence"><strong>Evidence:</strong> System prompt mutates across turns due to injected ISO-8601 timestamp, Per-turn UUID / request nonce, invalidating KV prefix cache (current cache hit rate: 0.0%).</p>
+                  <p class="finding-fix"><strong>Remediation:</strong> Freeze static system instructions &amp; deterministically sorted tool schemas at the top of the prompt, move dynamic timestamps/status into the latest user message, and attach `cache_control: {&quot;type&quot;: &quot;ephemeral&quot;}` breakpoints.</p>
+                </div>
+                
+                <div class="finding-card" data-category="OVERSIZED_CONTEXT_DUMP" data-severity="CRITICAL">
+                  <div class="finding-header">
+                    <div class="finding-badges">
+                      <span class="sev-pill sev-critical">CRITICAL</span>
+                      <span class="cat-pill">OVERSIZED_CONTEXT_DUMP</span>
+                      <span class="mono-dim">BG-DUMP-002 · Session 01_claude_code_runaway_session · T0..T3 (4 turns)</span>
+                    </div>
+                    <div class="finding-savings">
+                      <span class="save-amount">+$0.44</span>
+                      <span class="mono-dim">($0.440550 exact)</span>
+                    </div>
+                  </div>
+                  <h4 class="finding-title">Oversized Output Dump from `ReadFile` (~10,090 tok)</h4>
+                  <p class="finding-evidence"><strong>Evidence:</strong> Turn 0 `ReadFile` (path=package-lock.json) injected ~10,090 tokens (40,357 chars) into history, compounding across 7 subsequent turns.</p>
+                  <p class="finding-fix"><strong>Remediation:</strong> Filter or paginate `ReadFile` output (e.g., line-range reads, `grep -n`, `pytest -q --tb=short`, or head/tail truncation at 300 tokens).</p>
+                </div>
+                
+                <div class="finding-card" data-category="BLOATED_TOOL_SCHEMAS" data-severity="HIGH">
+                  <div class="finding-header">
+                    <div class="finding-badges">
+                      <span class="sev-pill sev-high">HIGH</span>
+                      <span class="cat-pill">BLOATED_TOOL_SCHEMAS</span>
+                      <span class="mono-dim">BG-MCP-003 · Session 01_claude_code_runaway_session · T0..T3 (4 turns)</span>
+                    </div>
+                    <div class="finding-savings">
+                      <span class="save-amount">+$0.32</span>
+                      <span class="mono-dim">($0.320160 exact)</span>
+                    </div>
+                  </div>
+                  <h4 class="finding-title">Bloated Tool/MCP Schemas: 24/26 tools unused (~5,624 tok/turn)</h4>
+                  <p class="finding-evidence"><strong>Evidence:</strong> 24 of 26 declared tool schemas (~5,624 tokens/turn; e.g. github__action_01, github__action_07, github__action_13, github__action_19, linear__action_02, linear__action_08) were injected across 8 turns without ever being invoked.</p>
+                  <p class="finding-fix"><strong>Remediation:</strong> Enable MCP lazy tool loading (`defer_loading: true` / Tool Search) or scope `allowedTools` per workspace so unused MCP schemas are loaded on-demand.</p>
+                </div>
+                
+                <div class="finding-card" data-category="PROMPT_CACHE_BUSTING" data-severity="CRITICAL">
+                  <div class="finding-header">
+                    <div class="finding-badges">
+                      <span class="sev-pill sev-critical">CRITICAL</span>
+                      <span class="cat-pill">PROMPT_CACHE_BUSTING</span>
+                      <span class="mono-dim">BG-CACHE-002 · Session 02_openai_codex_ci_pipeline_synthetic · T1..T3 (3 turns)</span>
+                    </div>
+                    <div class="finding-savings">
+                      <span class="save-amount">+$0.29</span>
+                      <span class="mono-dim">($0.291492 exact)</span>
+                    </div>
+                  </div>
+                  <h4 class="finding-title">Uncached Mega-Context (6.5% Cache Hit Rate)</h4>
+                  <p class="finding-evidence"><strong>Evidence:</strong> Multi-turn mega-context re-sent uncached (6.5% cache hit rate across 130,700 input tokens) without ephemeral cache breakpoints or stable ordering.</p>
+                  <p class="finding-fix"><strong>Remediation:</strong> Freeze static system instructions &amp; deterministically sorted tool schemas at the top of the prompt, move dynamic timestamps/status into the latest user message, and attach `cache_control: {&quot;type&quot;: &quot;ephemeral&quot;}` breakpoints.</p>
+                </div>
+                
+                <div class="finding-card" data-category="OVERSIZED_CONTEXT_DUMP" data-severity="MEDIUM">
+                  <div class="finding-header">
+                    <div class="finding-badges">
+                      <span class="sev-pill sev-medium">MEDIUM</span>
+                      <span class="cat-pill">OVERSIZED_CONTEXT_DUMP</span>
+                      <span class="mono-dim">BG-DUMP-001 · Session 02_openai_codex_ci_pipeline_synthetic · T0..T3 (4 turns)</span>
+                    </div>
+                    <div class="finding-savings">
+                      <span class="save-amount">+$0.07</span>
+                      <span class="mono-dim">($0.068579 exact)</span>
+                    </div>
+                  </div>
+                  <h4 class="finding-title">Oversized Output Dump from `exec_command` (~5,132 tok)</h4>
+                  <p class="finding-evidence"><strong>Evidence:</strong> Turn 0 `exec_command` (cmd=cargo build --workspace --verbose) injected ~5,132 tokens (20,526 chars) into history, compounding across 3 subsequent turns.</p>
+                  <p class="finding-fix"><strong>Remediation:</strong> Filter or paginate `exec_command` output (e.g., line-range reads, `grep -n`, `pytest -q --tb=short`, or head/tail truncation at 300 tokens).</p>
+                </div>
+                
+                <div class="finding-card" data-category="BLOATED_TOOL_SCHEMAS" data-severity="MEDIUM">
+                  <div class="finding-header">
+                    <div class="finding-badges">
+                      <span class="sev-pill sev-medium">MEDIUM</span>
+                      <span class="cat-pill">BLOATED_TOOL_SCHEMAS</span>
+                      <span class="mono-dim">BG-MCP-001 · Session 03_gemini_agent_session · T0..T4 (5 turns)</span>
+                    </div>
+                    <div class="finding-savings">
+                      <span class="save-amount">+$0.02</span>
+                      <span class="mono-dim">($0.015907 exact)</span>
+                    </div>
+                  </div>
+                  <h4 class="finding-title">Bloated Tool/MCP Schemas: 17/18 tools unused (~3,833 tok/turn)</h4>
+                  <p class="finding-evidence"><strong>Evidence:</strong> 17 of 18 declared tool schemas (~3,833 tokens/turn; e.g. Bash, github__action_01, github__action_07, github__action_13, linear__action_02, linear__action_08) were injected across 5 turns without ever being invoked.</p>
+                  <p class="finding-fix"><strong>Remediation:</strong> Enable MCP lazy tool loading (`defer_loading: true` / Tool Search) or scope `allowedTools` per workspace so unused MCP schemas are loaded on-demand.</p>
+                </div>
+                
+      </div>
+    </section>
+
+    
+        <section class="panel">
+          <div class="panel-head">
+            <div>
+              <h2>MCP Security &amp; Schema Token-Tax Audit</h2>
+              <p class="subtext">Source: <span class="mono">examples/mcp/vulnerable_mcp_config.json</span> · 5/5 active servers · ~99 eager tools (~21,780 tok/turn)</p>
+            </div>
+            <div class="grade-chip grade-f">Grade F · Risk 100/100</div>
+          </div>
+          <div class="mcp-grid">
+            <div>
+              
+                <div class="finding-card">
+                  <div class="finding-header">
+                    <div class="finding-badges">
+                      <span class="sev-pill sev-critical">CRITICAL</span>
+                      <span class="cat-pill">MCP-SEC-001 · SECURITY</span>
+                      <span class="mono-dim">Server: github-prod</span>
+                    </div>
+                    <div class="mono-dim">+30 risk pts</div>
+                  </div>
+                  <h4 class="finding-title">Hardcoded GitHub Personal Access Token in `github-prod.env.GITHUB_PERSONAL_ACCESS_TOKEN`</h4>
+                  <p class="finding-evidence"><strong>Evidence:</strong> env.GITHUB_PERSONAL_ACCESS_TOKEN = &quot;ghp_SY...SE99&quot; stored in plaintext JSON config.</p>
+                  <p class="finding-fix"><strong>Auto-Remediation:</strong> Move credential to OS keychain / shell environment and reference `${GITHUB_PERSONAL_ACCESS_TOKEN}`.</p>
+                </div>
+                
+                <div class="finding-card">
+                  <div class="finding-header">
+                    <div class="finding-badges">
+                      <span class="sev-pill sev-critical">CRITICAL</span>
+                      <span class="cat-pill">MCP-SEC-001 · SECURITY</span>
+                      <span class="mono-dim">Server: unsafe-shell-runner</span>
+                    </div>
+                    <div class="mono-dim">+30 risk pts</div>
+                  </div>
+                  <h4 class="finding-title">Hardcoded Anthropic API Key in `unsafe-shell-runner.env.ANTHROPIC_API_KEY`</h4>
+                  <p class="finding-evidence"><strong>Evidence:</strong> env.ANTHROPIC_API_KEY = &quot;sk-ant...9999&quot; stored in plaintext JSON config.</p>
+                  <p class="finding-fix"><strong>Auto-Remediation:</strong> Move credential to OS keychain / shell environment and reference `${ANTHROPIC_API_KEY}`.</p>
+                </div>
+                
+                <div class="finding-card">
+                  <div class="finding-header">
+                    <div class="finding-badges">
+                      <span class="sev-pill sev-critical">CRITICAL</span>
+                      <span class="cat-pill">MCP-SEC-003 · SANDBOX</span>
+                      <span class="mono-dim">Server: filesystem-root</span>
+                    </div>
+                    <div class="mono-dim">+28 risk pts</div>
+                  </div>
+                  <h4 class="finding-title">Unrestricted Filesystem Mount (`/`) on `filesystem-root`</h4>
+                  <p class="finding-evidence"><strong>Evidence:</strong> Argument `/` grants prompt-injected tool calls read/write reach across system or home directories.</p>
+                  <p class="finding-fix"><strong>Auto-Remediation:</strong> Scope filesystem server strictly to `${WORKSPACE_FOLDER}` and enable read-only mode where possible.</p>
+                </div>
+                
+                <div class="finding-card">
+                  <div class="finding-header">
+                    <div class="finding-badges">
+                      <span class="sev-pill sev-critical">CRITICAL</span>
+                      <span class="cat-pill">MCP-SEC-003 · SANDBOX</span>
+                      <span class="mono-dim">Server: unsafe-shell-runner</span>
+                    </div>
+                    <div class="mono-dim">+28 risk pts</div>
+                  </div>
+                  <h4 class="finding-title">Unrestricted Shell / Command Execution Risk on `unsafe-shell-runner`</h4>
+                  <p class="finding-evidence"><strong>Evidence:</strong> Detected shell execution server (`uvx mcp-server-shell==0.2.0 --dangerously-skip-permissions`), unsafe flags `--dangerously-skip-permissions`, `ALLOWED_COMMANDS=*` without container or command-allowlist sandboxing.</p>
+                  <p class="finding-fix"><strong>Auto-Remediation:</strong> Disable unrestricted shell MCP servers or enforce a strict read-only command allowlist inside workspace boundaries.</p>
+                </div>
+                
+                <div class="finding-card">
+                  <div class="finding-header">
+                    <div class="finding-badges">
+                      <span class="sev-pill sev-high">HIGH</span>
+                      <span class="cat-pill">MCP-SEC-004 · SECURITY</span>
+                      <span class="mono-dim">Server: legacy-remote-telemetry</span>
+                    </div>
+                    <div class="mono-dim">+20 risk pts</div>
+                  </div>
+                  <h4 class="finding-title">Unencrypted Remote MCP Endpoint (`http://`) on `legacy-remote-telemetry`</h4>
+                  <p class="finding-evidence"><strong>Evidence:</strong> Remote URL `http://mcp-staging.synthetic-internal.example/sse` transmits MCP tool payloads and headers without TLS.</p>
+                  <p class="finding-fix"><strong>Auto-Remediation:</strong> Upgrade remote MCP transport URL to `https://` with mTLS or OAuth 2.1 bearer scoping.</p>
+                </div>
+                
+                <div class="finding-card">
+                  <div class="finding-header">
+                    <div class="finding-badges">
+                      <span class="sev-pill sev-high">HIGH</span>
+                      <span class="cat-pill">MCP-SEC-002 · SUPPLY_CHAIN</span>
+                      <span class="mono-dim">Server: filesystem-root</span>
+                    </div>
+                    <div class="mono-dim">+18 risk pts</div>
+                  </div>
+                  <h4 class="finding-title">Unpinned Dynamic Package Execution in `filesystem-root`</h4>
+                  <p class="finding-evidence"><strong>Evidence:</strong> `npx -y @modelcontextprotocol/server-filesystem /` uses auto-install flag `-y` + unpinned package `@modelcontextprotocol/server-filesystem`, pulling arbitrary upstream registry tarballs at launch.</p>
+                  <p class="finding-fix"><strong>Auto-Remediation:</strong> Pin exact verified version `@modelcontextprotocol/server-filesystem@2026.1.0` and pre-install or verify package integrity.</p>
+                </div>
+                
+                <div class="finding-card">
+                  <div class="finding-header">
+                    <div class="finding-badges">
+                      <span class="sev-pill sev-high">HIGH</span>
+                      <span class="cat-pill">MCP-SEC-002 · SUPPLY_CHAIN</span>
+                      <span class="mono-dim">Server: github-prod</span>
+                    </div>
+                    <div class="mono-dim">+18 risk pts</div>
+                  </div>
+                  <h4 class="finding-title">Unpinned Dynamic Package Execution in `github-prod`</h4>
+                  <p class="finding-evidence"><strong>Evidence:</strong> `npx -y @modelcontextprotocol/server-github@latest` uses auto-install flag `-y` + unpinned package `@modelcontextprotocol/server-github@latest`, pulling arbitrary upstream registry tarballs at launch.</p>
+                  <p class="finding-fix"><strong>Auto-Remediation:</strong> Pin exact verified version `@modelcontextprotocol/server-github@2026.1.0` and pre-install or verify package integrity.</p>
+                </div>
+                
+                <div class="finding-card">
+                  <div class="finding-header">
+                    <div class="finding-badges">
+                      <span class="sev-pill sev-high">HIGH</span>
+                      <span class="cat-pill">MCP-SEC-002 · SUPPLY_CHAIN</span>
+                      <span class="mono-dim">Server: playwright-e2e</span>
+                    </div>
+                    <div class="mono-dim">+18 risk pts</div>
+                  </div>
+                  <h4 class="finding-title">Unpinned Dynamic Package Execution in `playwright-e2e`</h4>
+                  <p class="finding-evidence"><strong>Evidence:</strong> `npx -y @playwright/mcp` uses auto-install flag `-y` + unpinned package `@playwright/mcp`, pulling arbitrary upstream registry tarballs at launch.</p>
+                  <p class="finding-fix"><strong>Auto-Remediation:</strong> Pin exact verified version `@playwright/mcp@0.1.0` and pre-install or verify package integrity.</p>
+                </div>
+                
+                <div class="finding-card">
+                  <div class="finding-header">
+                    <div class="finding-badges">
+                      <span class="sev-pill sev-high">HIGH</span>
+                      <span class="cat-pill">MCP-SEC-002 · SUPPLY_CHAIN</span>
+                      <span class="mono-dim">Server: unsafe-shell-runner</span>
+                    </div>
+                    <div class="mono-dim">+15 risk pts</div>
+                  </div>
+                  <h4 class="finding-title">Unpinned Python Tool Runner (`uvx mcp-server-shell`)</h4>
+                  <p class="finding-evidence"><strong>Evidence:</strong> `uvx` executes latest unpinned PyPI release of `mcp-server-shell` on startup.</p>
+                  <p class="finding-fix"><strong>Auto-Remediation:</strong> Pin exact package version `mcp-server-shell==0.2.0`.</p>
+                </div>
+                
+                <div class="finding-card">
+                  <div class="finding-header">
+                    <div class="finding-badges">
+                      <span class="sev-pill sev-high">HIGH</span>
+                      <span class="cat-pill">MCP-COST-002 · COST</span>
+                      <span class="mono-dim">Server: &lt;global&gt;</span>
+                    </div>
+                    <div class="mono-dim">+14 risk pts</div>
+                  </div>
+                  <h4 class="finding-title">Excessive Global Eager MCP Tool Count (99 tools across 5 servers)</h4>
+                  <p class="finding-evidence"><strong>Evidence:</strong> 99 eager tools add ~21,780 input tokens per turn ($6.53 uncached token tax per 100 turns on claude-sonnet-4-6).</p>
+                  <p class="finding-fix"><strong>Auto-Remediation:</strong> Set `&quot;defer_loading&quot;: true` across secondary MCP servers and split configs by project workspace.</p>
+                </div>
+                
+                <div class="finding-card">
+                  <div class="finding-header">
+                    <div class="finding-badges">
+                      <span class="sev-pill sev-medium">MEDIUM</span>
+                      <span class="cat-pill">MCP-COST-001 · COST</span>
+                      <span class="mono-dim">Server: github-prod</span>
+                    </div>
+                    <div class="mono-dim">+10 risk pts</div>
+                  </div>
+                  <h4 class="finding-title">High Eager Tool Footprint on `github-prod` (~34 tools)</h4>
+                  <p class="finding-evidence"><strong>Evidence:</strong> `github-prod` injects ~34 tool schemas (~7,480 tokens) into every turn even when unused.</p>
+                  <p class="finding-fix"><strong>Auto-Remediation:</strong> Enable `&quot;defer_loading&quot;: true` or restrict `&quot;allowedTools&quot;` to required actions.</p>
+                </div>
+                
+                <div class="finding-card">
+                  <div class="finding-header">
+                    <div class="finding-badges">
+                      <span class="sev-pill sev-medium">MEDIUM</span>
+                      <span class="cat-pill">MCP-COST-001 · COST</span>
+                      <span class="mono-dim">Server: legacy-remote-telemetry</span>
+                    </div>
+                    <div class="mono-dim">+10 risk pts</div>
+                  </div>
+                  <h4 class="finding-title">High Eager Tool Footprint on `legacy-remote-telemetry` (~26 tools)</h4>
+                  <p class="finding-evidence"><strong>Evidence:</strong> `legacy-remote-telemetry` injects ~26 tool schemas (~5,720 tokens) into every turn even when unused.</p>
+                  <p class="finding-fix"><strong>Auto-Remediation:</strong> Enable `&quot;defer_loading&quot;: true` or restrict `&quot;allowedTools&quot;` to required actions.</p>
+                </div>
+                
+                <div class="finding-card">
+                  <div class="finding-header">
+                    <div class="finding-badges">
+                      <span class="sev-pill sev-medium">MEDIUM</span>
+                      <span class="cat-pill">MCP-COST-001 · COST</span>
+                      <span class="mono-dim">Server: playwright-e2e</span>
+                    </div>
+                    <div class="mono-dim">+10 risk pts</div>
+                  </div>
+                  <h4 class="finding-title">High Eager Tool Footprint on `playwright-e2e` (~24 tools)</h4>
+                  <p class="finding-evidence"><strong>Evidence:</strong> `playwright-e2e` injects ~24 tool schemas (~5,280 tokens) into every turn even when unused.</p>
+                  <p class="finding-fix"><strong>Auto-Remediation:</strong> Enable `&quot;defer_loading&quot;: true` or restrict `&quot;allowedTools&quot;` to required actions.</p>
+                </div>
+                
+            </div>
+            <div class="code-card">
+              <div class="code-card-head">
+                <span>Sanitized Drop-In Config (<code>--fix-preview</code>)</span>
+                <button type="button" class="btn-action" id="copySafeMcpBtn">Copy Safe JSON</button>
+              </div>
+              <pre id="safeMcpCode">{
+  &quot;_comment&quot;: &quot;SYNTHETIC BENCHMARK FIXTURE — All tokens below are non-functional synthetic test strings.&quot;,
+  &quot;mcpServers&quot;: {
+    &quot;filesystem-root&quot;: {
+      &quot;command&quot;: &quot;npx&quot;,
+      &quot;args&quot;: [
+        &quot;@modelcontextprotocol/server-filesystem@2026.1.0&quot;,
+        &quot;${WORKSPACE_FOLDER}&quot;
+      ],
+      &quot;defer_loading&quot;: true
+    },
+    &quot;github-prod&quot;: {
+      &quot;command&quot;: &quot;npx&quot;,
+      &quot;args&quot;: [
+        &quot;@modelcontextprotocol/server-github@2026.1.0&quot;
+      ],
+      &quot;env&quot;: {
+        &quot;GITHUB_PERSONAL_ACCESS_TOKEN&quot;: &quot;${GITHUB_PERSONAL_ACCESS_TOKEN}&quot;
+      },
+      &quot;defer_loading&quot;: true
+    },
+    &quot;unsafe-shell-runner&quot;: {
+      &quot;command&quot;: &quot;uvx&quot;,
+      &quot;args&quot;: [
+        &quot;mcp-server-shell==0.2.0&quot;
+      ],
+      &quot;env&quot;: {
+        &quot;ANTHROPIC_API_KEY&quot;: &quot;${ANTHROPIC_API_KEY}&quot;,
+        &quot;ALLOWED_COMMANDS&quot;: &quot;git status,git diff,pytest&quot;
+      },
+      &quot;disabled&quot;: true,
+      &quot;burnguardNote&quot;: &quot;Disabled by BurnGuard safe remediation due to unsandboxed shell access&quot;
+    },
+    &quot;legacy-remote-telemetry&quot;: {
+      &quot;url&quot;: &quot;https://mcp-staging.synthetic-internal.example/sse&quot;,
+      &quot;eagerTools&quot;: 26,
+      &quot;defer_loading&quot;: true
+    },
+    &quot;playwright-e2e&quot;: {
+      &quot;command&quot;: &quot;npx&quot;,
+      &quot;args&quot;: [
+        &quot;@playwright/mcp@0.1.0&quot;
+      ],
+      &quot;defer_loading&quot;: true
+    }
+  }
+}</pre>
+            </div>
+          </div>
+        </section>
+        
+
+    
+    <section class="panel">
+      <div class="panel-head">
+        <div>
+          <h2>Session-Level Ledger Breakdown</h2>
+          <p class="subtext">Target: <span class="mono">examples/benchmarks</span></p>
+        </div>
+      </div>
+      <div style="overflow-x:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>Session ID</th>
+              <th>Schema</th>
+              <th>Primary Model</th>
+              <th class="num">Turns</th>
+              <th class="num">Total Tokens</th>
+              <th class="num">Cache Hit</th>
+              <th class="num">Actual Spend</th>
+              <th class="num">Recoverable</th>
+              <th class="num">Optimized Net</th>
+            </tr>
+          </thead>
+          <tbody>
+            
+                <tr>
+                  <td class="mono">01_claude_code_runaway_session</td>
+                  <td><span class="cat-pill">anthropic</span></td>
+                  <td class="mono">claude-opus-4-6</td>
+                  <td class="mono num">8</td>
+                  <td class="mono num">319,540</td>
+                  <td class="mono num">0.0%</td>
+                  <td class="mono num">$5.1315</td>
+                  <td class="mono num text-green">$4.3421 (84.6%)</td>
+                  <td class="mono num text-cyan">$0.7894</td>
+                </tr>
+                
+                <tr>
+                  <td class="mono">02_openai_codex_ci_pipeline_synthetic</td>
+                  <td><span class="cat-pill">openai</span></td>
+                  <td class="mono">gpt-5-codex</td>
+                  <td class="mono num">4</td>
+                  <td class="mono num">134,170</td>
+                  <td class="mono num">6.5%</td>
+                  <td class="mono num">$0.6847</td>
+                  <td class="mono num text-green">$0.3601 (52.6%)</td>
+                  <td class="mono num text-cyan">$0.3246</td>
+                </tr>
+                
+                <tr>
+                  <td class="mono">03_gemini_agent_session</td>
+                  <td><span class="cat-pill">gemini</span></td>
+                  <td class="mono">gemini-3.1-pro</td>
+                  <td class="mono num">5</td>
+                  <td class="mono num">149,000</td>
+                  <td class="mono num">65.1%</td>
+                  <td class="mono num">$0.1681</td>
+                  <td class="mono num text-green">$0.0159 (9.5%)</td>
+                  <td class="mono num text-cyan">$0.1522</td>
+                </tr>
+                
+          </tbody>
+        </table>
+      </div>
+    </section>
+    
+  </main>
+
+  <footer>
+    <span>BurnGuard Pro v1.0.0 · Engineered by Unit-500</span>
+    <span>Zero External Requests · 100% Local Python Decimal Engine</span>
+  </footer>
+
+  <script>
+    (function() {
+      const avgSavePerSession = 1.572693;
+      const sessSlider = document.getElementById('sessPerDaySlider');
+      const seatsSlider = document.getElementById('seatsSlider');
+      const sessLbl = document.getElementById('sessPerDayLabel');
+      const seatsLbl = document.getElementById('seatsLabel');
+      const monthlyEl = document.getElementById('monthlySavedVal');
+      const annualEl = document.getElementById('annualSavedVal');
+      const paybackEl = document.getElementById('paybackLabel');
+
+      function updateForecast() {
+        if (!sessSlider || !seatsSlider) return;
+        const s = parseInt(sessSlider.value, 10) || 1;
+        const seats = parseInt(seatsSlider.value, 10) || 1;
+        sessLbl.textContent = String(s);
+        seatsLbl.textContent = String(seats);
+        const dailySave = avgSavePerSession * s * seats;
+        const monthlySave = dailySave * 22;
+        const annualSave = monthlySave * 12;
+        monthlyEl.textContent = '$' + monthlySave.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        annualEl.textContent = '$' + annualSave.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        const licensePrice = seats === 1 ? 29 : (seats <= 2 ? 59 : 149);
+        if (dailySave > 0.01) {
+          const days = licensePrice / dailySave;
+          paybackEl.textContent = days < 1
+            ? ('Payback vs $' + licensePrice + ' tier: ' + Math.max(1, Math.round(days * 24)) + ' hrs')
+            : ('Payback vs $' + licensePrice + ' tier: ' + days.toFixed(1) + ' days');
+        } else {
+          paybackEl.textContent = 'Baseline session already optimized';
+        }
+      }
+      if (sessSlider && seatsSlider) {
+        sessSlider.addEventListener('input', updateForecast);
+        seatsSlider.addEventListener('input', updateForecast);
+        updateForecast();
+      }
+
+      const filterContainer = document.getElementById('findingFilters');
+      if (filterContainer) {
+        filterContainer.addEventListener('click', function(ev) {
+          const btn = ev.target.closest('.filter-btn');
+          if (!btn) return;
+          const filter = btn.getAttribute('data-filter');
+          filterContainer.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          document.querySelectorAll('#findingsList .finding-card').forEach(card => {
+            const cat = card.getAttribute('data-category');
+            const sev = card.getAttribute('data-severity');
+            const show = (filter === 'ALL') || (cat === filter) || (sev === filter);
+            card.style.display = show ? '' : 'none';
+          });
+        });
+      }
+
+      const copyBtn = document.getElementById('copySafeMcpBtn');
+      const codePre = document.getElementById('safeMcpCode');
+      if (copyBtn && codePre) {
+        copyBtn.addEventListener('click', function() {
+          const raw = codePre.textContent || '';
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(raw).then(function() {
+              copyBtn.textContent = 'Copied!';
+              setTimeout(() => { copyBtn.textContent = 'Copy Safe JSON'; }, 1600);
+            });
+          }
+        });
+      }
+    })();
+  </script>
+</body>
+</html>

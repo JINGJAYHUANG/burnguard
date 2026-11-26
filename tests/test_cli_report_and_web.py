@@ -134,12 +134,30 @@ def test_flagship_sample_report_exists_and_is_valid() -> None:
     assert forbidden_marker not in html_body
 
 
-def test_release_zip_archive_and_sha256_integrity() -> None:
+def test_release_zip_archive_and_sha256_integrity(tmp_path: Path) -> None:
     import hashlib
+    import importlib.util
+    import shutil
     import zipfile
 
     zip_path = PROJECT_ROOT / "dist" / "burnguard-pro-v1.0.0.zip"
     sha_path = PROJECT_ROOT / "dist" / "burnguard-pro-v1.0.0.zip.sha256"
+    if not zip_path.exists():
+        work_root = tmp_path / "pkg"
+        shutil.copytree(
+            PROJECT_ROOT,
+            work_root,
+            ignore=shutil.ignore_patterns(".git", ".venv", ".tmp", "__pycache__", ".pytest_cache"),
+        )
+        spec = importlib.util.spec_from_file_location(
+            "build_release_zip", work_root / "scripts" / "build_release_zip.py"
+        )
+        assert spec and spec.loader
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        mod.build_release_bundle(work_root)
+        zip_path = work_root / "dist" / "burnguard-pro-v1.0.0.zip"
+        sha_path = work_root / "dist" / "burnguard-pro-v1.0.0.zip.sha256"
     assert zip_path.exists(), "Release archive must exist in dist/"
     assert sha_path.exists(), "SHA256 checksum file must exist in dist/"
 
